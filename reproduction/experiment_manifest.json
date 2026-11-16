@@ -1,0 +1,53 @@
+{
+  "paper": "MARVEL: Multi-Agent Reinforcement Learning for constrained field-of-View multi-robot Exploration in Large-scale environments (ICRA 2025)",
+  "mode": "author checkpoint evaluation; no training",
+  "checkpoint": "load_model/MARVEL/checkpoint.pth",
+  "checkpoint_sha256": "2e992ff83c8b05a346e882be5279f3e3db8b04e6be7aad308dd2b6c0532d99b2",
+  "episodes_per_config": 100,
+  "max_episode_steps": 128,
+  "seed_base": 20261104,
+  "configs": [
+    {"table": "I", "agents": 2, "fov_deg": 120, "sensor_range_m": 10},
+    {"table": "I", "agents": 4, "fov_deg": 120, "sensor_range_m": 10},
+    {"table": "I", "agents": 8, "fov_deg": 120, "sensor_range_m": 10},
+    {"table": "II", "agents": 4, "fov_deg": 90, "sensor_range_m": 10},
+    {"table": "II", "agents": 4, "fov_deg": 180, "sensor_range_m": 10},
+    {"table": "III", "agents": 4, "fov_deg": 120, "sensor_range_m": 12},
+    {"table": "III", "agents": 4, "fov_deg": 120, "sensor_range_m": 15}
+  ],
+  "result_status": "completed",
+  "completed_at": "2026-11-04T18:25+08:00",
+  "environment": {
+    "python": "3.11.13",
+    "torch": "2.8.0+cu126",
+    "numpy": "2.3.2",
+    "scikit_image": "0.26.0",
+    "shapely": "2.2.0",
+    "gpu": "2x NVIDIA RTX 4090 24GB",
+    "ray_used": false
+  },
+  "code_changes_required": [
+    "utils/sensor.py: ndarray.itemset -> index assignment (removed in NumPy 2.0)",
+    "utils/utils.py: np.lib.pad -> np.pad (removed in NumPy 2.0)",
+    "utils/agent.py: current_edge tensor now moved to device (author ran tests on CPU)"
+  ],
+  "results": [
+    {"config": "table_I_n2_fov120_r10",   "traj_all": 509.65, "traj_all_std": 94.19,  "traj_success_only": 505.33, "cov90": 422.24, "overlap": 0.051, "success_percent": 99,  "paper_traj": 505.25},
+    {"config": "table_I_n4_fov120_r10",   "traj_all": 349.61, "traj_all_std": 77.36,  "traj_success_only": 345.20, "cov90": 290.78, "overlap": 0.171, "success_percent": 99,  "paper_traj": 357.50},
+    {"config": "table_I_n8_fov120_r10",   "traj_all": 284.99, "traj_all_std": 112.30, "traj_success_only": 275.07, "cov90": 231.70, "overlap": 0.336, "success_percent": 99,  "paper_traj": 279.35},
+    {"config": "table_II_n4_fov90_r10",   "traj_all": 377.07, "traj_all_std": 72.83,  "traj_success_only": 377.07, "cov90": 313.30, "overlap": 0.145, "success_percent": 100, "paper_traj": 378.99},
+    {"config": "table_II_n4_fov180_r10",  "traj_all": 320.76, "traj_all_std": 59.46,  "traj_success_only": 320.76, "cov90": 270.96, "overlap": 0.199, "success_percent": 100, "paper_traj": 328.36},
+    {"config": "table_III_n4_fov120_r12", "traj_all": 324.94, "traj_all_std": 95.76,  "traj_success_only": 317.84, "cov90": 261.90, "overlap": 0.226, "success_percent": 99,  "paper_traj": 299.57},
+    {"config": "table_III_n4_fov120_r15", "traj_all": 316.32, "traj_all_std": 108.79, "traj_success_only": 304.29, "cov90": 251.82, "overlap": 0.281, "success_percent": 98,  "paper_traj": 258.35}
+  ],
+  "seed_7777_check": [
+    {"config": "table_III_n4_fov120_r12", "traj_all": 322.29, "traj_success_only": 322.29, "success_percent": 100, "delta_vs_paper": 0.076},
+    {"config": "table_III_n4_fov120_r15", "traj_all": 317.33, "traj_success_only": 308.83, "success_percent": 99,  "delta_vs_paper": 0.195}
+  ],
+  "notes": [
+    "Overlap for Table III is reported with the corrected (actual sensor range) metric: 12 m gives 0.226 vs paper 0.223; the author code hardcodes the 10 m training range.",
+    "Failure episodes exhaust 128 steps with 78-96% coverage and 786-1267 m trajectories; they inflate mean and std, so all-episodes and success-only means are both reported.",
+    "Overlap std is between-episode here vs between-timestep in the paper; means are comparable, stds are not.",
+    "Training cannot be reproduced: the release ships 100 test maps only, not the 5,663 training maps."
+  ]
+}

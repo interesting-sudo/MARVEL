@@ -1,0 +1,87 @@
+2 channel Terms of Service accepted
+Retrieving notices: ...working... done
+Source:      /home/dingzhili2026/miniconda3/envs/ipp
+Destination: /home/dingzhili2026/miniconda3/envs/marvel_repro
+Packages: 20
+Files: 33325
+
+Downloading and Extracting Packages: ...working... done
+
+## Package Plan ##
+
+  environment location: /home/dingzhili2026/miniconda3/envs/marvel_repro
+
+  added / updated specs:
+    - https://repo.anaconda.com/pkgs/main/linux-64::_libgcc_mutex==0.1=main
+    - https://repo.anaconda.com/pkgs/main/linux-64::_openmp_mutex==5.1=1_gnu
+    - https://repo.anaconda.com/pkgs/main/linux-64::ca-certificates==2025.2.25=h06a4308_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::ld_impl_linux-64==2.40=h12ee557_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::libffi==3.4.4=h6a678d5_1
+    - https://repo.anaconda.com/pkgs/main/linux-64::libgcc-ng==11.2.0=h1234567_1
+    - https://repo.anaconda.com/pkgs/main/linux-64::libgomp==11.2.0=h1234567_1
+    - https://repo.anaconda.com/pkgs/main/linux-64::libstdcxx-ng==11.2.0=h1234567_1
+    - https://repo.anaconda.com/pkgs/main/linux-64::ncurses==6.4=h6a678d5_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::openssl==3.0.16=h5eee18b_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::python==3.9.21=he870216_1
+    - https://repo.anaconda.com/pkgs/main/linux-64::readline==8.2=h5eee18b_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::setuptools==78.1.1=py39h06a4308_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::sqlite==3.45.3=h5eee18b_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::tk==8.6.14=h39e8969_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::wheel==0.45.1=py39h06a4308_0
+    - https://repo.anaconda.com/pkgs/main/linux-64::xz==5.6.4=h5eee18b_1
+    - https://repo.anaconda.com/pkgs/main/linux-64::zlib==1.2.13=h5eee18b_1
+    - https://repo.anaconda.com/pkgs/main/noarch::pip==25.1=pyhc872135_2
+    - https://repo.anaconda.com/pkgs/main/noarch::tzdata==2025b=h04d1e81_0
+
+
+The following NEW packages will be INSTALLED:
+
+  _libgcc_mutex      pkgs/main/linux-64::_libgcc_mutex-0.1-main 
+  _openmp_mutex      pkgs/main/linux-64::_openmp_mutex-5.1-1_gnu 
+  ca-certificates    pkgs/main/linux-64::ca-certificates-2025.2.25-h06a4308_0 
+  ld_impl_linux-64   pkgs/main/linux-64::ld_impl_linux-64-2.40-h12ee557_0 
+  libffi             pkgs/main/linux-64::libffi-3.4.4-h6a678d5_1 
+  libgcc-ng          pkgs/main/linux-64::libgcc-ng-11.2.0-h1234567_1 
+  libgomp            pkgs/main/linux-64::libgomp-11.2.0-h1234567_1 
+  libstdcxx-ng       pkgs/main/linux-64::libstdcxx-ng-11.2.0-h1234567_1 
+  ncurses            pkgs/main/linux-64::ncurses-6.4-h6a678d5_0 
+  openssl            pkgs/main/linux-64::openssl-3.0.16-h5eee18b_0 
+  pip                pkgs/main/noarch::pip-25.1-pyhc872135_2 
+  python             pkgs/main/linux-64::python-3.9.21-he870216_1 
+  readline           pkgs/main/linux-64::readline-8.2-h5eee18b_0 
+  setuptools         pkgs/main/linux-64::setuptools-78.1.1-py39h06a4308_0 
+  sqlite             pkgs/main/linux-64::sqlite-3.45.3-h5eee18b_0 
+  tk                 pkgs/main/linux-64::tk-8.6.14-h39e8969_0 
+  tzdata             pkgs/main/noarch::tzdata-2025b-h04d1e81_0 
+  wheel              pkgs/main/linux-64::wheel-0.45.1-py39h06a4308_0 
+  xz                 pkgs/main/linux-64::xz-5.6.4-h5eee18b_1 
+  zlib               pkgs/main/linux-64::zlib-1.2.13-h5eee18b_1 
+
+
+
+Downloading and Extracting Packages: ...working... done
+Preparing transaction: ...working... done
+Verifying transaction: ...working... done
+Executing transaction: ...working... done
+WARNING conda.conda_pypi.main:notify_externally_managed_future(156): 
+  Did you know? You can install many PyPI packages with conda
+  using the conda-pypi beta. Get started:
+    https://docs.conda.io/projects/conda/en/stable/new-features.html
+
+#
+# To activate this environment, use
+#
+#     $ conda activate marvel_repro
+#
+# To deactivate an active environment, use
+#
+#     $ conda deactivate
+
+
+Channel "defaults" has the following notices:
+  [warning] -- Wed Sep 30 00:00:00 2026
+  Anaconda will stop building new Python 3.10 packages on the main channel after October 31, 2026. Existing Python 3.10 packages will stay available but will no longer get new builds or security fixes. We recommend upgrading to Python 3.11 or later. Details: https://www.anaconda.com/docs/reference/policies-practices/python-version-support?utm_source=channel_notices
+
+  [info] -- Thu Aug  6 00:00:00 2026
+  main-x (Anaconda's new authenticated channel) is now generally available, with thousands of additional packages from our secure supply chain. Get started at: https://anaconda.com/docs/getting-started/main-x?utm_source=channel_notices
+

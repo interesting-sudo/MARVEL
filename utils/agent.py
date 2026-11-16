@@ -226,7 +226,7 @@ class Agent:
             edge_mask = padding(edge_mask)
 
         current_in_edge = np.argwhere(current_edge == self.current_index)[0][0]
-        current_edge = torch.tensor(current_edge).unsqueeze(0)
+        current_edge = torch.tensor(current_edge).unsqueeze(0).to(self.device)
         k_size = current_edge.size()[-1]
         if pad:
             padding = torch.nn.ConstantPad1d((0, K_SIZE - k_size), 0)

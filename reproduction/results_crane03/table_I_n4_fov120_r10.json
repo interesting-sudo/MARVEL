@@ -1,0 +1,25 @@
+{
+  "config": {
+    "table": "I",
+    "agents": 4,
+    "fov_deg": 120,
+    "sensor_range_m": 10
+  },
+  "episodes": 100,
+  "seed_base": 20261104,
+  "checkpoint_sha256": "2e992ff83c8b05a346e882be5279f3e3db8b04e6be7aad308dd2b6c0532d99b2",
+  "correct_overlap": false,
+  "trajectory_mean_std": [
+    348.7463782491488,
+    77.4817426885919
+  ],
+  "coverage90_mean_std": [
+    290.06114132759154,
+    59.949088306847806
+  ],
+  "overlap_mean_std": [
+    0.1704458983774556,
+    0.05573067484803755
+  ],
+  "success_percent": 99.0
+}
