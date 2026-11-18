@@ -1,0 +1,26 @@
+{
+  "config": {
+    "mode": "fov",
+    "episodes": 10,
+    "start": 0,
+    "workers": 4,
+    "n_agents": 8,
+    "fov": 120.0,
+    "sensor_range": 10.0,
+    "seed": 20261118,
+    "output": "results/overlap_coord/dev10/fov_l20_k24.jsonl"
+  },
+  "episodes": 10,
+  "travel_dist_mean": 291.6519146997457,
+  "travel_dist_std": 63.78551127611674,
+  "success_rate": 1.0,
+  "explored_rate_mean": 0.9948477426100044,
+  "dist_to_0_90_mean": 231.84306677243944,
+  "dist_to_0_90_std": 52.77385018947923,
+  "overlap_ratio_mean": 0.1877365860987344,
+  "overlap_ratio_std": 0.14311990908810332,
+  "episode_overlap_mean": 0.18386262476649262,
+  "wall_time_mean": 36.014485883712766,
+  "changed_actions_per_step": 1.7654320987654322,
+  "triggered_agents_per_step": 3.4246913580246914
+}

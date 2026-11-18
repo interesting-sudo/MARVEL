@@ -1,0 +1,26 @@
+{
+  "config": {
+    "mode": "full",
+    "episodes": 2,
+    "start": 0,
+    "workers": 2,
+    "n_agents": 8,
+    "fov": 120.0,
+    "sensor_range": 10.0,
+    "seed": 20261118,
+    "output": "results/overlap_coord/smoke/full.jsonl"
+  },
+  "episodes": 2,
+  "travel_dist_mean": 222.5455838560165,
+  "travel_dist_std": 10.912536060589261,
+  "success_rate": 1.0,
+  "explored_rate_mean": 0.995575672370206,
+  "dist_to_0_90_mean": 181.0001857865258,
+  "dist_to_0_90_std": 5.625118400082499,
+  "overlap_ratio_mean": 0.2928836110918709,
+  "overlap_ratio_std": 0.1621185369216148,
+  "episode_overlap_mean": 0.2915060399319107,
+  "wall_time_mean": 27.2455917596817,
+  "changed_actions_per_step": 0.3125,
+  "triggered_agents_per_step": 3.5625
+}

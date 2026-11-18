@@ -1,0 +1,26 @@
+{
+  "config": {
+    "mode": "frontier",
+    "episodes": 10,
+    "start": 0,
+    "workers": 4,
+    "n_agents": 8,
+    "fov": 120.0,
+    "sensor_range": 10.0,
+    "seed": 20261118,
+    "output": "results/overlap_coord/dev10/frontier.jsonl"
+  },
+  "episodes": 10,
+  "travel_dist_mean": 275.93701918415553,
+  "travel_dist_std": 47.56350922990198,
+  "success_rate": 1.0,
+  "explored_rate_mean": 0.9959309217393187,
+  "dist_to_0_90_mean": 218.36238857285815,
+  "dist_to_0_90_std": 48.26490099575213,
+  "overlap_ratio_mean": 0.33240087542486246,
+  "overlap_ratio_std": 0.16302630967902096,
+  "episode_overlap_mean": 0.32744306481624097,
+  "wall_time_mean": 29.19461510181427,
+  "changed_actions_per_step": 0.007772020725388601,
+  "triggered_agents_per_step": 2.2746113989637307
+}
