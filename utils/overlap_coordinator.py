@@ -28,6 +28,7 @@ class OverlapCoordinator:
         separation_weight=0.0,
         separation_radius=0.0,
         separation_reduce="mean",
+        separation_horizon=float("inf"),
         use_overlap=True,
         use_frontier=True,
     ):
@@ -58,6 +59,8 @@ class OverlapCoordinator:
         self.separation_radius = separation_radius if separation_radius > 0 else 1.2 * sensor_range
         # 'mean' 用平均间距，'min' 只看最近队友——重叠由最近的那台决定，min 更贴合几何
         self.separation_reduce = separation_reduce
+        # 只在开局 crowding 阶段启用分离项（重叠质量集中在最初若干决策步），之后回归纯策略
+        self.separation_horizon = separation_horizon
 
     def _candidate_frontiers(self, robot, candidate):
         if "frontiers" in candidate:
@@ -180,7 +183,8 @@ class OverlapCoordinator:
         committed_mask = None
         committed_counts = {}
         committed_positions = []
-        crowded = self._crowded()
+        separation_active = (self.separation_weight > 0.0) and (step < self.separation_horizon)
+        crowded = self._crowded() if separation_active else False
         has_committed = False
         changed = 0
         triggered = 0
@@ -282,5 +286,6 @@ class OverlapCoordinator:
             "predicted_overlap": float(np.mean(predicted_overlaps)) if predicted_overlaps else 0.0,
             "priority_start": start,
             "crowded": int(crowded),
+            "separation_active": int(separation_active),
         }
         return selected, info

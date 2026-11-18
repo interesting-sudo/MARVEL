@@ -43,7 +43,8 @@ class OverlapCoordinatorTest(unittest.TestCase):
     def make_coordinator(self, use_overlap=True, use_frontier=True, max_policy_drop=float('inf'),
                          max_detour_ratio=float('inf'), same_waypoint_only=False,
                          tabu_waypoint_steps=0, detour_budget=float('inf'),
-                         min_frontier_ratio=0.0, separation_weight=0.0, separation_radius=0.0):
+                         min_frontier_ratio=0.0, separation_weight=0.0, separation_radius=0.0,
+                         separation_horizon=float('inf')):
         return OverlapCoordinator(
             [FakeRobot(0), FakeRobot(1)],
             self.sensing_mask,
@@ -63,6 +64,7 @@ class OverlapCoordinatorTest(unittest.TestCase):
             min_frontier_ratio=min_frontier_ratio,
             separation_weight=separation_weight,
             separation_radius=separation_radius,
+            separation_horizon=separation_horizon,
             use_overlap=use_overlap,
             use_frontier=use_frontier,
         )
@@ -299,6 +301,31 @@ class OverlapCoordinatorTest(unittest.TestCase):
             use_overlap=False, use_frontier=False,
         ).select(lists, step=0)
         self.assertEqual(selected[1]['action_index'], 0)
+        self.assertEqual(info['crowded'], 0)
+
+    def test_separation_horizon_turns_off_late(self):
+        lists = [
+            [candidate(0, 0, 'left', position=[0.0, 0.0])],
+            [candidate(1, 0, 'right', position=[1.0, 0.0]),
+             candidate(1, 1, 'right', position=[9.0, 0.0])],
+        ]
+        coordinator = self.make_coordinator(
+            use_overlap=False, use_frontier=False,
+            separation_weight=1.0, separation_radius=12.0,
+            separation_horizon=5,
+        )
+        selected, info = coordinator.select(lists, step=4)
+        self.assertEqual(selected[1]['action_index'], 1)
+        self.assertEqual(info['separation_active'], 1)
+
+        coordinator = self.make_coordinator(
+            use_overlap=False, use_frontier=False,
+            separation_weight=1.0, separation_radius=12.0,
+            separation_horizon=5,
+        )
+        selected, info = coordinator.select(lists, step=5)
+        self.assertEqual(selected[1]['action_index'], 0)
+        self.assertEqual(info['separation_active'], 0)
         self.assertEqual(info['crowded'], 0)
 
     def test_priority_rotates(self):

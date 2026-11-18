@@ -70,6 +70,7 @@ class TestWorker:
             separation_weight=OVERLAP_COORDINATION_SEPARATION_WEIGHT,
             separation_radius=OVERLAP_COORDINATION_SEPARATION_RADIUS,
             separation_reduce=OVERLAP_COORDINATION_SEPARATION_REDUCE,
+            separation_horizon=OVERLAP_COORDINATION_SEPARATION_HORIZON,
             use_overlap=self.coordination_mode in ('fov', 'full'),
             use_frontier=self.coordination_mode in ('frontier', 'full'),
         )
