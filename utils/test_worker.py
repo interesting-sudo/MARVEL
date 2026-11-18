@@ -10,7 +10,8 @@ from utils.utils import *
 from utils.node_manager import NodeManager
 from utils.ground_truth_node_manager import GroundTruthNodeManager
 from utils.model import PolicyNet
-from utils.motion_model import compute_allowable_heading  
+from utils.motion_model import compute_allowable_heading
+from utils.overlap_coordinator import OverlapCoordinator
 from test_parameter import *
 
 if not os.path.exists(gifs_path):
@@ -36,10 +37,48 @@ class TestWorker:
         self.robot_list = [Agent(i, policy_net, self.fov, self.env.angles[i], self.sensor_range, self.node_manager, None, self.device, self.save_image) for i in
                            range(self.n_agents)]
 
+        self.coordination_mode = OVERLAP_COORDINATION_MODE
+        if self.coordination_mode not in ('off', 'fov', 'frontier', 'full'):
+            raise ValueError('Unknown overlap coordination mode: {}'.format(self.coordination_mode))
+        self.coordinator = None
+        self.watchdog_step = None
+
+        self.perf_metrics = dict()
+
+    def build_coordinator(self):
+        """Fresh coordinator per episode so per-episode state never leaks."""
+        if self.coordination_mode == 'off':
+            return None
+        return OverlapCoordinator(
+            self.robot_list,
+            self.create_sensing_mask,
+            self.fov,
+            self.sensor_range,
+            top_k=OVERLAP_COORDINATION_TOP_K,
+            overlap_weight=OVERLAP_COORDINATION_OVERLAP_WEIGHT,
+            frontier_weight=OVERLAP_COORDINATION_FRONTIER_WEIGHT,
+            frontier_softness=OVERLAP_COORDINATION_FRONTIER_SOFTNESS,
+            switch_margin=OVERLAP_COORDINATION_SWITCH_MARGIN,
+            hysteresis_bonus=OVERLAP_COORDINATION_HYSTERESIS_BONUS,
+            overlap_trigger=OVERLAP_COORDINATION_OVERLAP_TRIGGER,
+            max_policy_drop=OVERLAP_COORDINATION_MAX_POLICY_DROP,
+            max_detour_ratio=OVERLAP_COORDINATION_MAX_DETOUR_RATIO,
+            same_waypoint_only=OVERLAP_COORDINATION_SAME_WAYPOINT_ONLY,
+            tabu_waypoint_steps=OVERLAP_COORDINATION_TABU_WAYPOINT_STEPS,
+            detour_budget=OVERLAP_COORDINATION_DETOUR_BUDGET,
+            min_frontier_ratio=OVERLAP_COORDINATION_MIN_FRONTIER_RATIO,
+            use_overlap=self.coordination_mode in ('fov', 'full'),
+            use_frontier=self.coordination_mode in ('frontier', 'full'),
+        )
+
         self.perf_metrics = dict()
 
     def run_episode(self):
         done = False
+        self.coordinator = self.build_coordinator()
+        self.watchdog_step = None
+        stall_steps = 0
+        last_explored_rate = self.env.explored_rate
         for robot in self.robot_list:
             robot.update_graph(self.env.belief_info, self.env.robot_locations[robot.id].copy())
         for robot in self.robot_list:    
@@ -54,6 +93,7 @@ class TestWorker:
         explored_rate_history = [self.env.explored_rate]
         overlap_rate = self.compute_overlap_rate(self.env.robot_locations, self.env.angles)
         overlap_ratio_history = [overlap_rate]
+        coordination_history = []
 
         setpoints = [[] for _ in range(self.n_agents)]
         headings = [[] for _ in range(self.n_agents)]
@@ -61,19 +101,54 @@ class TestWorker:
 
         for i in range(MAX_EPISODE_STEP):
             # print(' Current timestep: {}/{}'.format(i, MAX_EPISODE_STEP))
+            current_explored_rate = self.env.explored_rate
+            if i > 0:
+                if current_explored_rate - last_explored_rate < OVERLAP_COORDINATION_STALL_GAIN:
+                    stall_steps += 1
+                else:
+                    stall_steps = 0
+                if (self.coordinator is not None
+                        and stall_steps >= OVERLAP_COORDINATION_STALL_STEPS):
+                    self.coordinator = None
+                    self.watchdog_step = i
+            last_explored_rate = current_explored_rate
             selected_locations = []
             dist_list = []
             next_node_index_list = []
             next_heading_index_list = []
+            candidate_lists = []
             for robot in self.robot_list:
                 observation = robot.get_observation(pad=False)
-              
-                next_location, next_node_index, _, next_heading_index = robot.select_next_waypoint(observation, greedy=self.greedy)
+                if self.coordinator is None:
+                    next_location, next_node_index, _, next_heading_index = robot.select_next_waypoint(observation, greedy=self.greedy)
+                    selected_locations.append(next_location)
+                    next_node_index_list.append(next_node_index)
+                    next_heading_index_list.append(next_heading_index)
+                else:
+                    candidates = robot.get_action_candidates(observation)
+                    for candidate in candidates:
+                        requested_heading = candidate['heading_index'] * (360 / NUM_ANGLES_BIN)
+                        candidate['execution_heading'] = compute_allowable_heading(
+                            robot.location,
+                            candidate['position'],
+                            robot.heading,
+                            requested_heading,
+                            robot.velocity,
+                            robot.yaw_rate,
+                        )
+                    candidate_lists.append(candidates)
 
-                selected_locations.append(next_location)
+            if self.coordinator is not None:
+                selected_candidates, coordination_info = self.coordinator.select(candidate_lists, i)
+                coordination_info['step'] = i
+                coordination_history.append(coordination_info)
+                for candidate in selected_candidates:
+                    selected_locations.append(candidate['position'])
+                    next_node_index_list.append(candidate['node_index'])
+                    next_heading_index_list.append(candidate['heading_index'])
+
+            for robot, next_location in zip(self.robot_list, selected_locations):
                 dist_list.append(np.linalg.norm(next_location - robot.location))
-                next_node_index_list.append(next_node_index)
-                next_heading_index_list.append(next_heading_index)
 
             selected_locations = np.array(selected_locations).reshape(-1, 2)
             arriving_sequence = np.argsort(np.array(dist_list))
@@ -163,6 +238,7 @@ class TestWorker:
         self.perf_metrics['travel_dist'] = max([robot.travel_dist for robot in self.robot_list])
         self.perf_metrics['explored_rate'] = self.env.explored_rate
         self.perf_metrics['success_rate'] = done
+        self.perf_metrics['watchdog_step'] = self.watchdog_step
         if trajectory_length > 0:
             self.perf_metrics['dist_to_0_90'] = trajectory_length
         else:
@@ -170,6 +246,9 @@ class TestWorker:
         self.perf_metrics['length_history'] = length_history
         self.perf_metrics['explored_rate_history'] = explored_rate_history
         self.perf_metrics['overlap_ratio_history'] = overlap_ratio_history
+        self.perf_metrics['coordination_mode'] = self.coordination_mode
+        self.perf_metrics['coordination_history'] = coordination_history
+        self.perf_metrics['decision_steps'] = len(length_history) - 1
     
         # Save gif
         if self.save_image:
@@ -214,8 +293,8 @@ class TestWorker:
         else:
             angle_range = np.concatenate([np.linspace(start_angle, 360, 10), np.linspace(0, end_angle, 10)])
         for angle in angle_range:  
-            x = location_cell[0] + SENSOR_RANGE/CELL_SIZE * np.cos(np.radians(angle))
-            y = location_cell[1] + SENSOR_RANGE/CELL_SIZE * np.sin(np.radians(angle))
+            x = location_cell[0] + self.sensor_range/CELL_SIZE * np.cos(np.radians(angle))
+            y = location_cell[1] + self.sensor_range/CELL_SIZE * np.sin(np.radians(angle))
             sector_points.append(Point(x, y))
         sector_points.append(robot_point)  
         sector = Polygon(sector_points)
@@ -253,7 +332,7 @@ class TestWorker:
         plt.figure(figsize=(6, 3))
         color_list = ['r', 'b', 'g', 'y']
         color_name = ['Red', 'Blue', 'Green', 'Yellow']
-        sensing_range = SENSOR_RANGE / CELL_SIZE
+        sensing_range = self.sensor_range / CELL_SIZE
 
         plt.subplot(1, 2, 1)
         plt.imshow(self.env.robot_belief, cmap='gray')
@@ -305,7 +384,7 @@ class TestWorker:
             plt.gca().add_artist(arrow)
            
             # Draw cone representing field of vision
-            cone = Wedge(center=(location[0], location[1]), r=SENSOR_RANGE / CELL_SIZE, theta1=(heading-self.fov/2), 
+            cone = Wedge(center=(location[0], location[1]), r=self.sensor_range / CELL_SIZE, theta1=(heading-self.fov/2), 
                          theta2=(heading+self.fov/2), color=c, alpha=0.5, zorder=10)
             plt.gca().add_artist(cone)
 

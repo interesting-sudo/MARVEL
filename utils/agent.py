@@ -260,6 +260,32 @@ class Agent:
         next_position = self.node_coords[next_node_index]
 
         return next_position, next_node_index, action_index, heading_index
+
+    def get_action_candidates(self, observation):
+        """Return all joint waypoint-heading candidates ranked by policy log probability."""
+        _, _, _, _, current_edge, _, _, _, _ = observation
+        with torch.no_grad():
+            logp = self.policy_net(*observation)
+
+        flat_logp = logp.detach().cpu().numpy().reshape(-1)
+        ranked_actions = np.argsort(-flat_logp, kind="stable")
+        candidates = []
+        for rank, flat_index in enumerate(ranked_actions):
+            action_index = int(flat_index)
+            waypoint_index = action_index // self.num_heading_candidates
+            next_node_index = current_edge[0, waypoint_index, 0].item()
+            heading_index = self.neighbor_best_indices[waypoint_index][action_index % self.num_heading_candidates]
+            candidates.append({
+                "robot_id": self.id,
+                "rank": rank,
+                "action_index": action_index,
+                "logp": float(flat_logp[action_index]),
+                "waypoint_index": waypoint_index,
+                "node_index": next_node_index,
+                "heading_index": int(heading_index),
+                "position": self.node_coords[next_node_index].copy(),
+            })
+        return candidates
     
     def compute_best_heading(self, node_coords, frontier_distribution, neighbor_nodes):
         neighbor_best_headings = []
