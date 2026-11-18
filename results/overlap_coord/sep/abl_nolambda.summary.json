@@ -1,0 +1,26 @@
+{
+  "config": {
+    "mode": "full",
+    "episodes": 100,
+    "start": 0,
+    "workers": 8,
+    "n_agents": 8,
+    "fov": 120.0,
+    "sensor_range": 10.0,
+    "seed": 20261118,
+    "output": "results/overlap_coord/sep/abl_nolambda.jsonl"
+  },
+  "episodes": 100,
+  "travel_dist_mean": 291.3289893172858,
+  "travel_dist_std": 52.113743493587485,
+  "success_rate": 1.0,
+  "explored_rate_mean": 0.9945492060549185,
+  "dist_to_0_90_mean": 242.2303743859761,
+  "dist_to_0_90_std": 47.41443213743672,
+  "overlap_ratio_mean": 0.1538295382829104,
+  "overlap_ratio_std": 0.17544667353307994,
+  "episode_overlap_mean": 0.15362588737402919,
+  "wall_time_mean": 38.05783894300461,
+  "changed_actions_per_step": 2.6807522123893803,
+  "triggered_agents_per_step": 6.995575221238938
+}

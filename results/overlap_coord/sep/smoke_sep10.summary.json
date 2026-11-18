@@ -1,0 +1,26 @@
+{
+  "config": {
+    "mode": "full",
+    "episodes": 8,
+    "start": 0,
+    "workers": 8,
+    "n_agents": 8,
+    "fov": 120.0,
+    "sensor_range": 10.0,
+    "seed": 20261118,
+    "output": "results/overlap_coord/sep/smoke_sep10.jsonl"
+  },
+  "episodes": 8,
+  "travel_dist_mean": 271.7464443748918,
+  "travel_dist_std": 68.05964730449266,
+  "success_rate": 1.0,
+  "explored_rate_mean": 0.9958230122765883,
+  "dist_to_0_90_mean": 211.49505493088796,
+  "dist_to_0_90_std": 57.65293951531298,
+  "overlap_ratio_mean": 0.17717967001118726,
+  "overlap_ratio_std": 0.15529942946039135,
+  "episode_overlap_mean": 0.17349554770160985,
+  "wall_time_mean": 34.60281550884247,
+  "changed_actions_per_step": 2.1463414634146343,
+  "triggered_agents_per_step": 6.960365853658536
+}
