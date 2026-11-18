@@ -67,6 +67,9 @@ class TestWorker:
             tabu_waypoint_steps=OVERLAP_COORDINATION_TABU_WAYPOINT_STEPS,
             detour_budget=OVERLAP_COORDINATION_DETOUR_BUDGET,
             min_frontier_ratio=OVERLAP_COORDINATION_MIN_FRONTIER_RATIO,
+            separation_weight=OVERLAP_COORDINATION_SEPARATION_WEIGHT,
+            separation_radius=OVERLAP_COORDINATION_SEPARATION_RADIUS,
+            separation_reduce=OVERLAP_COORDINATION_SEPARATION_REDUCE,
             use_overlap=self.coordination_mode in ('fov', 'full'),
             use_frontier=self.coordination_mode in ('frontier', 'full'),
         )

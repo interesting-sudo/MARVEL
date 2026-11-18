@@ -43,7 +43,7 @@ class OverlapCoordinatorTest(unittest.TestCase):
     def make_coordinator(self, use_overlap=True, use_frontier=True, max_policy_drop=float('inf'),
                          max_detour_ratio=float('inf'), same_waypoint_only=False,
                          tabu_waypoint_steps=0, detour_budget=float('inf'),
-                         min_frontier_ratio=0.0):
+                         min_frontier_ratio=0.0, separation_weight=0.0, separation_radius=0.0):
         return OverlapCoordinator(
             [FakeRobot(0), FakeRobot(1)],
             self.sensing_mask,
@@ -61,6 +61,8 @@ class OverlapCoordinatorTest(unittest.TestCase):
             tabu_waypoint_steps=tabu_waypoint_steps,
             detour_budget=detour_budget,
             min_frontier_ratio=min_frontier_ratio,
+            separation_weight=separation_weight,
+            separation_radius=separation_radius,
             use_overlap=use_overlap,
             use_frontier=use_frontier,
         )
@@ -257,6 +259,47 @@ class OverlapCoordinatorTest(unittest.TestCase):
             use_frontier=False, min_frontier_ratio=0.5
         ).select(lists, step=0)
         self.assertEqual(selected[1]['action_index'], 1)
+
+    def test_separation_prefers_far_candidate(self):
+        lists = [
+            [candidate(0, 0, 'left', position=[0.0, 0.0])],
+            [candidate(1, 0, 'right', position=[1.0, 0.0]),
+             candidate(1, 1, 'right', position=[9.0, 0.0])],
+        ]
+        selected, info = self.make_coordinator(
+            use_overlap=False, use_frontier=False,
+            separation_weight=1.0, separation_radius=12.0,
+        ).select(lists, step=0)
+        self.assertEqual(selected[1]['action_index'], 1)
+        self.assertEqual(info['crowded'], 1)
+
+    def test_separation_inactive_when_fleet_is_sparse(self):
+        lists = [
+            [candidate(0, 0, 'left', position=[0.0, 0.0])],
+            [candidate(1, 0, 'right', position=[1.0, 0.0]),
+             candidate(1, 1, 'right', position=[9.0, 0.0])],
+        ]
+        coordinator = self.make_coordinator(
+            use_overlap=False, use_frontier=False,
+            separation_weight=1.0, separation_radius=12.0,
+        )
+        for robot in coordinator.robots:
+            robot.location = np.array([40.0 * (robot.id + 1), 0.0])
+        selected, info = coordinator.select(lists, step=0)
+        self.assertEqual(selected[1]['action_index'], 0)
+        self.assertEqual(info['crowded'], 0)
+
+    def test_separation_disabled_keeps_policy_choice(self):
+        lists = [
+            [candidate(0, 0, 'left', position=[0.0, 0.0])],
+            [candidate(1, 0, 'right', position=[1.0, 0.0]),
+             candidate(1, 1, 'right', position=[9.0, 0.0])],
+        ]
+        selected, info = self.make_coordinator(
+            use_overlap=False, use_frontier=False,
+        ).select(lists, step=0)
+        self.assertEqual(selected[1]['action_index'], 0)
+        self.assertEqual(info['crowded'], 0)
 
     def test_priority_rotates(self):
         lists = [[candidate(0, 0, 'left')], [candidate(1, 0, 'left')]]

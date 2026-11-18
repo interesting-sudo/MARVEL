@@ -25,6 +25,9 @@ class OverlapCoordinator:
         tabu_waypoint_steps=0,
         detour_budget=np.inf,
         min_frontier_ratio=0.0,
+        separation_weight=0.0,
+        separation_radius=0.0,
+        separation_reduce="mean",
         use_overlap=True,
         use_frontier=True,
     ):
@@ -50,6 +53,11 @@ class OverlapCoordinator:
         self.detour_used = [0.0] * len(robots)
         self.previous_actions = [None] * len(robots)
         self.recent_waypoints = [[] for _ in robots]
+        self.separation_weight = separation_weight
+        # 0 表示自动取 1.2 倍传感半径：该尺度内任意朝向的 120° 扇形必然互相覆盖
+        self.separation_radius = separation_radius if separation_radius > 0 else 1.2 * sensor_range
+        # 'mean' 用平均间距，'min' 只看最近队友——重叠由最近的那台决定，min 更贴合几何
+        self.separation_reduce = separation_reduce
 
     def _candidate_frontiers(self, robot, candidate):
         if "frontiers" in candidate:
@@ -101,6 +109,34 @@ class OverlapCoordinator:
     def _travel_distance(self, robot, candidate):
         return float(np.linalg.norm(np.asarray(candidate["position"], dtype=float) - robot.location))
 
+    def _crowded(self):
+        """机群是否处于“几何上必然重叠”的拥挤态。
+
+        只要存在一对智能体间距小于 separation_radius，任何候选朝向的 120° 扇形都会与
+        队友大面积相交，此时重叠惩罚对所有候选近似等值（梯度饱和），必须改用位移分离项。
+        """
+        if self.separation_weight <= 0.0:
+            return False
+        locations = np.array([robot.location for robot in self.robots], dtype=float).reshape(-1, 2)
+        for i in range(locations.shape[0]):
+            for j in range(i + 1, locations.shape[0]):
+                if np.linalg.norm(locations[i] - locations[j]) < self.separation_radius:
+                    return True
+        return False
+
+    def _separation_gain(self, candidate, committed_positions):
+        """候选落点相对已承诺队友的分离度，取值 [0, 1]，越大越分散。"""
+        if not committed_positions:
+            return 0.0
+        position = np.asarray(candidate["position"], dtype=float)
+        gains = [
+            min(float(np.linalg.norm(position - other)) / self.separation_radius, 1.0)
+            for other in committed_positions
+        ]
+        if self.separation_reduce == "min":
+            return float(np.min(gains))
+        return float(np.mean(gains))
+
     def _eligible(self, robot, candidates, original, original_distance):
         eligible = []
         remaining_budget = self.detour_budget - self.detour_used[robot.id]
@@ -143,6 +179,8 @@ class OverlapCoordinator:
         selected = [None] * n_agents
         committed_mask = None
         committed_counts = {}
+        committed_positions = []
+        crowded = self._crowded()
         has_committed = False
         changed = 0
         triggered = 0
@@ -161,7 +199,8 @@ class OverlapCoordinator:
                 self._frontier_ratio(original, committed_counts) if self.use_frontier else 1.0
             )
             should_coordinate = has_committed and self.detour_used[robot_id] < self.detour_budget and (
-                (self.use_overlap and original_overlap > self.overlap_trigger)
+                crowded
+                or (self.use_overlap and original_overlap > self.overlap_trigger)
                 or (self.use_frontier and original_frontier_ratio < 1.0)
             )
 
@@ -191,10 +230,14 @@ class OverlapCoordinator:
                         if self.use_frontier
                         else 1.0
                     )
+                    separation_gain = (
+                        self._separation_gain(candidate, committed_positions) if crowded else 0.0
+                    )
                     score = (
                         candidate["logp"]
                         + self.frontier_weight * frontier_ratio
                         - self.overlap_weight * overlap
+                        + self.separation_weight * separation_gain
                     )
                     if rank == 0:
                         score += self.switch_margin
@@ -215,6 +258,7 @@ class OverlapCoordinator:
             selected[robot_id] = chosen
             self.previous_actions[robot_id] = chosen
             self.recent_waypoints[robot_id].append(chosen["node_index"])
+            committed_positions.append(np.asarray(chosen["position"], dtype=float))
             if len(self.recent_waypoints[robot_id]) > 8:
                 del self.recent_waypoints[robot_id][:-8]
             predicted_overlaps.append(chosen_overlap)
@@ -237,5 +281,6 @@ class OverlapCoordinator:
             "budget_exhausted": int(sum(1 for used in self.detour_used if used >= self.detour_budget)),
             "predicted_overlap": float(np.mean(predicted_overlaps)) if predicted_overlaps else 0.0,
             "priority_start": start,
+            "crowded": int(crowded),
         }
         return selected, info
