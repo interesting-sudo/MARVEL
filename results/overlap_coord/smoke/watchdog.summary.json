@@ -1,0 +1,26 @@
+{
+  "config": {
+    "mode": "full",
+    "episodes": 2,
+    "start": 0,
+    "workers": 2,
+    "n_agents": 8,
+    "fov": 120.0,
+    "sensor_range": 10.0,
+    "seed": 20261119,
+    "output": "results/overlap_coord/smoke/watchdog.jsonl"
+  },
+  "episodes": 2,
+  "travel_dist_mean": 265.49968938219877,
+  "travel_dist_std": 19.29180626575804,
+  "success_rate": 1.0,
+  "explored_rate_mean": 0.9938654838347918,
+  "dist_to_0_90_mean": 192.99687398346998,
+  "dist_to_0_90_std": 27.304951684997036,
+  "overlap_ratio_mean": 0.14770211548621556,
+  "overlap_ratio_std": 0.16596437873815464,
+  "episode_overlap_mean": 0.14766541335271605,
+  "wall_time_mean": 34.83663082122803,
+  "changed_actions_per_step": 1.9871794871794872,
+  "triggered_agents_per_step": 2.7948717948717947
+}
