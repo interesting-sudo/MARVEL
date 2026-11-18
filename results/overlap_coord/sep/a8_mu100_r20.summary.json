@@ -1,0 +1,26 @@
+{
+  "config": {
+    "mode": "full",
+    "episodes": 100,
+    "start": 0,
+    "workers": 10,
+    "n_agents": 8,
+    "fov": 120.0,
+    "sensor_range": 10.0,
+    "seed": 20261118,
+    "output": "results/overlap_coord/sep/a8_mu100_r20.jsonl"
+  },
+  "episodes": 100,
+  "travel_dist_mean": 306.1549954093515,
+  "travel_dist_std": 128.22522962717585,
+  "success_rate": 0.98,
+  "explored_rate_mean": 0.993325357212504,
+  "dist_to_0_90_mean": 242.336898312286,
+  "dist_to_0_90_std": 51.07192117441411,
+  "overlap_ratio_mean": 0.16252775188858534,
+  "overlap_ratio_std": 0.17468347424366262,
+  "episode_overlap_mean": 0.15815275930740408,
+  "wall_time_mean": 39.29305733203888,
+  "changed_actions_per_step": 2.788256227758007,
+  "triggered_agents_per_step": 6.979314946619217
+}
